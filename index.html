@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matematika duel: 2 kishilik online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#fbfdff; --grid:#d3e3f6; --ink:#1b3a8c; --ink-soft:#4a63a8;
+    --margin:#e2574c; --ok:#17794a; --ok-bg:#e3f6ec; --bad:#b3261e; --bad-bg:#fde8e6; --line:#9db6e0;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    color:var(--ink);background-color:var(--paper);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:24px 24px;min-height:100vh;line-height:1.45;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+  h1{font-size:1.3rem;margin:0 0 14px}
+  .sheet{background:var(--paper);border:2px solid var(--ink);border-radius:6px;padding:20px 20px 20px 44px;position:relative;box-shadow:4px 4px 0 var(--line)}
+  .sheet::before{content:"";position:absolute;left:28px;top:0;bottom:0;width:2px;background:var(--margin);opacity:.7}
+  .screen{display:none}.screen.on{display:block}
+  p{margin:0 0 12px}
+  .soft{color:var(--ink-soft);font-size:.95rem}
+  ul.rules{margin:0 0 16px;padding-left:18px}
+  ul.rules li{margin-bottom:4px}
+  label{display:block;font-size:.9rem;color:var(--ink-soft);margin-bottom:4px}
+  input[type=text]{font:inherit;width:100%;max-width:320px;padding:10px 12px;border:2px solid var(--line);border-radius:6px;color:var(--ink);background:#fff;margin-bottom:16px}
+  input:focus-visible,.btn:focus-visible,.opt:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+  .btn{font:inherit;font-weight:500;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:6px;padding:10px 18px;cursor:pointer}
+  .btn:hover{background:var(--ink);color:#fff}
+  .btn.primary{background:var(--ink);color:#fff}.btn.primary:hover{background:#12296b}
+  .big{font-size:3.4rem;font-weight:700;text-align:center;margin:10px 0}
+  .bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .pl{border:2px solid var(--line);border-radius:6px;padding:8px 10px;background:#fff}
+  .pl.me{border-color:var(--ink)}
+  .pl .nm{font-size:.85rem;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pl .sc{font-size:1.5rem;font-weight:700}
+  .pl .sub{font-size:.8rem;color:var(--ink-soft)}
+  .track{height:6px;background:var(--grid);border-radius:3px;margin-top:6px;overflow:hidden}
+  .track i{display:block;height:100%;width:0;background:var(--ink)}
+  .timer{text-align:center;font-size:1.8rem;font-weight:700;margin:0 0 12px}
+  .timer.low{color:var(--bad)}
+  .meta{font-size:.9rem;color:var(--ink-soft);margin:0 0 8px}
+  #q{font-size:1.4rem;line-height:1.35;margin:0 0 16px;font-weight:500;min-height:2.7em}
+  #opts{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+  .opt{width:100%;display:flex;align-items:center;gap:12px;text-align:left;font:inherit;font-size:1.1rem;color:var(--ink);background:#fff;border:2px solid var(--line);border-radius:6px;padding:12px 14px;cursor:pointer}
+  .opt:hover:not(:disabled){border-color:var(--ink)}
+  .opt .letter{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;font-weight:700;font-size:.9rem}
+  .opt .mark{margin-left:auto;font-weight:700}
+  .opt:disabled{cursor:default}
+  .opt.ok{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opt.bad{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .res{font-size:1.6rem;font-weight:700;margin:0 0 12px}
+  .res.win{color:var(--ok)}.res.lose{color:var(--bad)}
+  #err{color:var(--bad);font-weight:500;min-height:1.4em}
+  @media (max-width:480px){.sheet{padding:16px 14px 16px 36px}.sheet::before{left:22px}#q{font-size:1.2rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Matematika duel</h1>
+  <main class="sheet">
+
+    <!-- 1. Kirish -->
+    <section class="screen on" id="s-home">
+      <ul class="rules">
+        <li>Tasodifiy raqib bilan 1 ga 1 o'ynaysiz.</li>
+        <li>Ikkalangizga bir xil 100 ta savol tushadi (100 000 ta savol ichidan).</li>
+        <li>Vaqt: 30 daqiqa. Kim ko'proq to'g'ri javob topsa, shu yutadi.</li>
+        <li>Natijalar teng bo'lsa, 100 tasini tezroq tugatgan yutadi, aks holda durang.</li>
+      </ul>
+      <label for="nick">Ismingiz</label>
+      <input type="text" id="nick" maxlength="16" placeholder="Masalan: Ali" autocomplete="off">
+      <div class="row" style="margin-top:0"><button class="btn primary" id="play">Raqib qidirish</button></div>
+      <p id="err"></p>
+    </section>
+
+    <!-- 2. Qidirish -->
+    <section class="screen" id="s-wait">
+      <p><b id="waitTxt">Raqib qidirilmoqda...</b></p>
+      <p class="soft">Raqib ham shu sahifani ochib "Raqib qidirish" tugmasini bossa, sizlar avtomatik topishasiz. Sinash uchun sahifani ikkinchi telefon yoki boshqa oynada oching.</p>
+      <div class="row"><button class="btn" id="cancel">Bekor qilish</button></div>
+    </section>
+
+    <!-- 3. Sanash -->
+    <section class="screen" id="s-count">
+      <p class="soft" id="vs" style="text-align:center"></p>
+      <div class="big" id="cnt">3</div>
+      <p class="soft" style="text-align:center">Tayyor bo'ling!</p>
+    </section>
+
+    <!-- 4. O'yin -->
+    <section class="screen" id="s-game">
+      <div class="timer" id="timer">30:00</div>
+      <div class="bar">
+        <div class="pl me"><div class="nm" id="myName">Siz</div><div class="sc"><span id="myOk">0</span> to'g'ri</div><div class="sub">Savol <span id="myIdx">1</span> / 100</div><div class="track"><i id="myBar"></i></div></div>
+        <div class="pl"><div class="nm" id="opName">Raqib</div><div class="sc"><span id="opOk">0</span> to'g'ri</div><div class="sub">Savol <span id="opIdx">0</span> / 100</div><div class="track"><i id="opBar"></i></div></div>
+      </div>
+      <div id="playArea">
+        <p class="meta" id="qmeta"></p>
+        <h2 id="q"></h2>
+        <ol id="opts"></ol>
+        <div class="row"><button class="btn" id="skip">O'tkazib yuborish</button></div>
+      </div>
+      <p id="waitFin" class="soft" style="display:none">Siz tugatdingiz. Raqibning natijasi kutilmoqda...</p>
+    </section>
+
+    <!-- 5. Natija -->
+    <section class="screen" id="s-result">
+      <p class="res" id="resTxt"></p>
+      <p id="resDetail"></p>
+      <div class="row"><button class="btn primary" id="again">Yana o'ynash</button></div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  var TOTAL = 100000, NQ = 100, GAME_MS = 30*60*1000;
+  var SLOTS = 12, PREFIX = "mdl100k-v1-s";
+
+  /* ======== Savollar (har bir raqamdan bir xil savol chiqadi) ======== */
+  function rng(seed){
+    var t = seed >>> 0;
+    var f = function(){
+      t = (t + 0x6D2B79F5) >>> 0;
+      var x = Math.imul(t ^ (t >>> 15), t | 1);
+      x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
+      return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+    };
+    f.int = function(a,b){ return a + Math.floor(f()*(b-a+1)); };
+    f.pick = function(arr){ return arr[Math.floor(f()*arr.length)]; };
+    return f;
+  }
+  function fmt(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00A0"); }
+  function gcd(a,b){ return b ? gcd(b, a % b) : a; }
+  var names = ["Ali","Vali","Zilola","Madina","Sardor","Dilnoza","Jasur","Nigora","Bobur","Malika"];
+  var things = ["olma","qalam","daftar","kitob","anor","nok"];
+  var topics = [
+    ["Qo'shish", function(r){ var a=r.int(100,9999), b=r.int(100,9999); return {q:fmt(a)+" + "+fmt(b)+" nechaga teng?", a:a+b}; }],
+    ["Ayirish", function(r){ var a=r.int(500,9999), b=r.int(100,a-1); return {q:fmt(a)+" − "+fmt(b)+" nechaga teng?", a:a-b}; }],
+    ["Ko'paytirish", function(r){ var a=r.int(12,99), b=r.int(11,99); return {q:a+" × "+b+" nechaga teng?", a:a*b}; }],
+    ["Bo'lish", function(r){ var b=r.int(2,25), k=r.int(11,99); return {q:fmt(b*k)+" ÷ "+b+" nechaga teng?", a:k}; }],
+    ["Chiziqli tenglama", function(r){ var a=r.int(2,12), x=r.int(1,30), b=r.int(1,50); return {q:a+"x + "+b+" = "+(a*x+b)+" bo'lsa, x nechaga teng?", a:x}; }],
+    ["Foiz", function(r){ var p=r.pick([5,10,15,20,25,30,40,50,60,75]), n=20*r.int(1,150); return {q:fmt(n)+" ning "+p+" foizi nechaga teng?", a:p*n/100}; }],
+    ["To'g'ri to'rtburchak yuzi", function(r){ var a=r.int(3,60), b=r.int(2,40); return {q:"Tomonlari "+a+" va "+b+" bo'lgan to'g'ri to'rtburchakning yuzi nechaga teng?", a:a*b}; }],
+    ["To'g'ri to'rtburchak perimetri", function(r){ var a=r.int(3,90), b=r.int(2,70); return {q:"Tomonlari "+a+" va "+b+" bo'lgan to'g'ri to'rtburchakning perimetri nechaga teng?", a:2*(a+b)}; }],
+    ["Pifagor teoremasi", function(r){
+      var t=r.pick([[3,4,5],[5,12,13],[8,15,17],[7,24,25],[20,21,29]]), m=r.int(1,12), s=t.map(function(v){return v*m;});
+      if(r.int(0,1)) return {q:"Katetlari "+s[0]+" va "+s[1]+" bo'lgan to'g'ri burchakli uchburchakning gipotenuzasi nechaga teng?", a:s[2]};
+      return {q:"To'g'ri burchakli uchburchakning gipotenuzasi "+s[2]+", katetlaridan biri "+s[0]+". Ikkinchi katet nechaga teng?", a:s[1]};
+    }],
+    ["Daraja", function(r){ var b=r.int(2,9), e=r.int(2,5); return {q:b+(["","","²","³","⁴","⁵"][e])+" nechaga teng?", a:Math.pow(b,e)}; }],
+    ["Kvadrat ildiz", function(r){ var k=r.int(11,99); return {q:"√"+fmt(k*k)+" nechaga teng?", a:k}; }],
+    ["Arifmetik progressiya", function(r){ var a=r.int(1,40), d=r.int(2,15), n=r.int(8,60); return {q:"Arifmetik progressiyada birinchi had "+a+", ayirma "+d+". Uning "+n+"-hadi nechaga teng?", a:a+(n-1)*d}; }],
+    ["O'rta arifmetik", function(r){
+      var v=[r.int(1,99),r.int(1,99),r.int(1,99),r.int(1,99)], s=v[0]+v[1]+v[2]+v[3], need=(5-(s%5))%5, e=need+5*r.int(0,15);
+      v.push(e); s+=e; return {q:v.join(", ")+" sonlarining o'rta arifmetigi nechaga teng?", a:s/5};
+    }],
+    ["Uchburchak burchaklari", function(r){ var a=r.int(20,80), b=r.int(20,99); if(a+b>=175) b=30; return {q:"Uchburchakning ikki burchagi "+a+"° va "+b+"°. Uchinchi burchagi necha gradus?", a:180-a-b}; }],
+    ["Tezlik, vaqt, masofa", function(r){ var v=r.int(20,120), t=r.int(2,12); return {q:"Avtomobil soatiga "+v+" km tezlik bilan "+t+" soat yurdi. U necha km yo'l bosdi?", a:v*t}; }],
+    ["EKUB", function(r){ var g=r.int(2,15), m=r.int(2,14), n=r.int(2,14), a=g*m, b=g*n; return {q:a+" va "+b+" sonlarining eng katta umumiy bo'luvchisi (EKUB) nechaga teng?", a:gcd(a,b)}; }],
+    ["EKUK", function(r){ var a=r.int(4,40), b=r.int(4,40); return {q:a+" va "+b+" sonlarining eng kichik umumiy karralisi (EKUK) nechaga teng?", a:a*b/gcd(a,b)}; }],
+    ["Kvadrat tenglama", function(r){ var p=r.int(1,20), q=r.int(1,20); if(p===q) q=p+1; return {q:"x² − "+(p+q)+"x + "+(p*q)+" = 0 tenglamaning katta ildizi nechaga teng?", a:Math.max(p,q)}; }],
+    ["Sonlar yig'indisi", function(r){ var n=r.int(10,300); return {q:"1 dan "+n+" gacha bo'lgan natural sonlar yig'indisi nechaga teng?", a:n*(n+1)/2}; }],
+    ["Kvadrat perimetri", function(r){ var k=r.int(3,99); return {q:"Kvadratning yuzi "+fmt(k*k)+" ga teng. Uning perimetri nechaga teng?", a:4*k}; }],
+    ["Masala", function(r){
+      var n1=r.pick(names), n2=r.pick(names); if(n1===n2) n2=names[(names.indexOf(n1)+1)%names.length];
+      var a=r.int(5,90), b=r.int(2,40), th=r.pick(things);
+      return {q:n1+"da "+a+" ta "+th+" bor. "+n2+"da "+n1+"dagidan "+b+" ta ko'p. Ikkalasida jami nechta "+th+" bor?", a:2*a+b};
+    }]
+  ];
+  function distract(ans, r){
+    var set=[ans], step=Math.max(2, Math.round(Math.abs(ans)*0.08));
+    var pool=[1,-1,2,-2,3,-3,5,-5,10,-10,step,-step,2*step,-2*step,3*step,-3*step], tries=0;
+    while(set.length<4){
+      tries++;
+      var d = ans + r.pick(pool) + (tries>20 ? r.int(1,30)*(r.int(0,1)?1:-1) : 0);
+      if(ans>=0 && d<0) continue;
+      if(set.indexOf(d)===-1) set.push(d);
+      if(tries>200) set.push(ans+set.length*37+tries);
+    }
+    return set;
+  }
+  function shuffle(a,r){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(r()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function makeQuestion(n){
+    var r = rng(Math.imul(n, 2654435761) ^ 0x9E3779B9); r(); r();
+    var t = topics[(n-1) % topics.length], o = t[1](r), opts = shuffle(distract(o.a, r), r);
+    return {q:o.q, topic:t[0], opts:opts, correct:opts.indexOf(o.a)};
+  }
+  function pickQuestions(seed){
+    var r = rng(seed), seen = {}, out = [];
+    while(out.length < NQ){ var n = r.int(1,TOTAL); if(!seen[n]){ seen[n]=1; out.push(n); } }
+    return out;
+  }
+
+  /* ======== Yordamchi ======== */
+  var $ = function(id){ return document.getElementById(id); };
+  function show(id){
+    var s = document.querySelectorAll(".screen");
+    for(var i=0;i<s.length;i++) s[i].classList.toggle("on", s[i].id===id);
+  }
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+  function safeDestroy(p){ try{ p && p.destroy(); }catch(e){} }
+
+  var myName = "";
+  try{ $("nick").value = localStorage.getItem("duelNick") || ""; }catch(e){}
+
+  /* ======== Raqib topish (PeerJS orqali, serverni o'zingiz yozmaysiz) ======== */
+  var token = 0, peer = null, guestPeer = null, conn = null, role = null, abortWait = null;
+  var oppName = "Raqib";
+
+  function resetNet(){
+    abortWait && abortWait(); abortWait = null;
+    try{ conn && conn.close(); }catch(e){}
+    safeDestroy(peer); if(guestPeer !== peer) safeDestroy(guestPeer);
+    peer = guestPeer = conn = null; role = null;
+  }
+
+  function tryClaim(k){
+    return new Promise(function(res){
+      var p = new Peer(PREFIX + k), done = false;
+      var to = setTimeout(function(){ if(!done){ done=true; safeDestroy(p); res("error"); } }, 8000);
+      p.on("open", function(){ if(done) return; done=true; clearTimeout(to); res(p); });
+      p.on("error", function(e){
+        if(done) return; done=true; clearTimeout(to); safeDestroy(p);
+        res(e && e.type === "unavailable-id" ? "taken" : "error");
+      });
+    });
+  }
+
+  function getGuest(){
+    if(guestPeer && !guestPeer.destroyed && guestPeer.open) return Promise.resolve(guestPeer);
+    safeDestroy(guestPeer);
+    return new Promise(function(res){
+      var p = new Peer(), done = false;
+      var to = setTimeout(function(){ if(!done){ done=true; safeDestroy(p); res(null); } }, 8000);
+      p.on("open", function(){ if(done) return; done=true; clearTimeout(to); guestPeer = p; res(p); });
+      p.on("error", function(){ if(done) return; done=true; clearTimeout(to); safeDestroy(p); res(null); });
+    });
+  }
+
+  function tryJoin(k, my){
+    return getGuest().then(function(gp){
+      if(!gp || my !== token) return false;
+      return new Promise(function(res){
+        var c = gp.connect(PREFIX + k, {reliable:true}), done = false;
+        function fin(v){ if(done) return; done = true; clearTimeout(to); if(!v){ try{ c.close(); }catch(e){} } res(v); }
+        var to = setTimeout(function(){ fin(false); }, 5000);
+        c.on("data", function(d){
+          if(done || !d) return;
+          if(d.t === "busy") fin(false);
+          else if(d.t === "hello"){
+            conn = c; role = "guest"; peer = gp; oppName = d.name || "Raqib";
+            attach(c);
+            c.send({t:"hello", name:myName});
+            fin(true);
+          }
+        });
+        c.on("error", function(){ fin(false); });
+        c.on("close", function(){ fin(false); });
+      });
+    });
+  }
+
+  function hostWait(p, my){
+    return new Promise(function(res){
+      var paired = false, finished = false;
+      function end(v){ if(finished) return; finished = true; clearTimeout(rehop); abortWait = null; res(v); }
+      var rehop = setTimeout(function(){ if(!paired){ safeDestroy(p); end(false); } }, 5000 + Math.random()*5000);
+      abortWait = function(){ safeDestroy(p); end(false); };
+      p.on("error", function(){});
+      p.on("disconnected", function(){ try{ p.reconnect(); }catch(e){} });
+      p.on("connection", function(c){
+        c.on("open", function(){
+          if(paired || my !== token){ c.send({t:"busy"}); setTimeout(function(){ try{ c.close(); }catch(e){} }, 300); return; }
+          paired = true;
+          conn = c; role = "host"; peer = p;
+          safeDestroy(guestPeer); guestPeer = null;
+          attach(c);
+          c.send({t:"hello", name:myName});
+          end(true);
+        });
+      });
+    });
+  }
+
+  async function search(){
+    var my = ++token, fails = 0;
+    show("s-wait"); $("waitTxt").textContent = "Raqib qidirilmoqda...";
+    while(my === token){
+      for(var k=0; k<SLOTS && my === token; k++){
+        var r = await tryClaim(k);
+        if(my !== token){ if(r && r.destroy) safeDestroy(r); return; }
+        if(r === "error"){ fails++; continue; }
+        if(r === "taken"){
+          if(await tryJoin(k, my)) return;
+          continue;
+        }
+        fails = 0;
+        peer = r;
+        if(await hostWait(r, my)) return;
+        break; /* qayta boshidan qidirish */
+      }
+      if(fails >= SLOTS){
+        $("waitTxt").textContent = "Server bilan aloqa yo'q. Qayta urinilmoqda...";
+        fails = 0; await sleep(3000);
+      } else {
+        $("waitTxt").textContent = "Raqib qidirilmoqda...";
+        await sleep(300 + Math.random()*700);
+      }
+    }
+  }
+
+  /* ======== O'yin holati ======== */
+  var G = null; /* joriy o'yin */
+  function newGame(){
+    return {seed:0, qs:[], idx:0, ok:0, locked:false, endAt:0, startAt:0, timerId:null,
+            myFin:false, myMs:0, opIdx:0, opOk:0, opFin:false, opMs:0, resultShown:false, started:false};
+  }
+  function send(m){ try{ conn && conn.open && conn.send(m); }catch(e){} }
+
+  function attach(c){
+    G = newGame();
+    c.on("data", onMsg);
+    c.on("close", onClose);
+    c.on("error", onClose);
+  }
+
+  function onMsg(d){
+    if(!d || !G) return;
+    switch(d.t){
+      case "hello":
+        oppName = d.name || "Raqib";
+        if(role === "host"){
+          G.seed = (Math.random()*4294967295) >>> 0;
+          send({t:"start", seed:G.seed, name:myName});
+        }
+        break;
+      case "start":
+        G.seed = d.seed; send({t:"ready"}); break;
+      case "ready":
+        if(role === "host"){ send({t:"go"}); beginCountdown(); }
+        break;
+      case "go":
+        beginCountdown(); break;
+      case "prog":
+        G.opIdx = d.idx|0; G.opOk = d.ok|0; updateOp(); break;
+      case "fin":
+        G.opFin = true; G.opOk = d.ok|0; G.opIdx = d.idx|0; G.opMs = d.ms|0; updateOp(); checkResult(); break;
+    }
+  }
+
+  function onClose(){
+    if(!G || G.resultShown) return;
+    if(!G.started && !G.seed) { /* hali boshlanmagan */ }
+    G.resultShown = true; stopTimer();
+    show("s-result");
+    $("resTxt").textContent = "Raqib chiqib ketdi"; $("resTxt").className = "res win";
+    $("resDetail").textContent = "Aloqa uzildi, g'alaba sizga beriladi.";
+  }
+
+  function beginCountdown(){
+    if(G.started) return; G.started = true;
+    G.qs = pickQuestions(G.seed);
+    $("vs").textContent = myName + "  va  " + oppName;
+    $("myName").textContent = myName; $("opName").textContent = oppName;
+    show("s-count");
+    var n = 3; $("cnt").textContent = n;
+    var iv = setInterval(function(){
+      if(!G || G.resultShown){ clearInterval(iv); return; }
+      n--;
+      if(n <= 0){ clearInterval(iv); startGame(); } else $("cnt").textContent = n;
+    }, 1000);
+  }
+
+  function startGame(){
+    G.startAt = Date.now(); G.endAt = G.startAt + GAME_MS;
+    show("s-game");
+    $("playArea").style.display = ""; $("waitFin").style.display = "none";
+    renderQ(); updateMe(); updateOp(); tick();
+    G.timerId = setInterval(tick, 250);
+  }
+  function stopTimer(){ if(G && G.timerId){ clearInterval(G.timerId); G.timerId = null; } }
+
+  function tick(){
+    if(!G || !G.endAt) return;
+    var left = Math.max(0, G.endAt - Date.now());
+    var m = Math.floor(left/60000), s = Math.floor(left/1000) % 60;
+    $("timer").textContent = (m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+    $("timer").classList.toggle("low", left < 60000);
+    if(left <= 0 && !G.myFin) finishMine();
+    checkResult();
+  }
+
+  function renderQ(){
+    var n = G.qs[G.idx], q = makeQuestion(n);
+    G.cur = q; G.locked = false;
+    $("qmeta").textContent = "Savol " + (G.idx+1) + " / " + NQ + "  –  " + q.topic;
+    $("q").textContent = q.q;
+    var list = $("opts"); list.innerHTML = "";
+    q.opts.forEach(function(v, i){
+      var li = document.createElement("li"), b = document.createElement("button");
+      b.className = "opt"; b.type = "button";
+      b.innerHTML = '<span class="letter">'+"ABCD"[i]+'</span><span>'+fmt(v)+'</span><span class="mark"></span>';
+      b.addEventListener("click", function(){ answer(i); });
+      li.appendChild(b); list.appendChild(li);
+    });
+  }
+
+  function answer(i){
+    if(!G || !G.endAt || G.locked || G.myFin) return;
+    G.locked = true;
+    var q = G.cur, btns = $("opts").querySelectorAll(".opt");
+    for(var k=0;k<btns.length;k++) btns[k].disabled = true;
+    if(i === q.correct){ G.ok++; btns[i].classList.add("ok"); btns[i].lastChild.textContent = "✓"; }
+    else { btns[i].classList.add("bad"); btns[i].lastChild.textContent = "✗"; btns[q.correct].classList.add("ok"); }
+    advance(650);
+  }
+  function skip(){
+    if(!G || !G.endAt || G.locked || G.myFin) return;
+    G.locked = true; advance(0);
+  }
+  function advance(delay){
+    var gg = G;
+    setTimeout(function(){
+      if(G !== gg || G.myFin) return;
+      G.idx++;
+      send({t:"prog", idx:G.idx, ok:G.ok});
+      if(G.idx >= NQ){ updateMe(); finishMine(); return; }
+      renderQ(); updateMe();
+    }, delay);
+  }
+
+  function updateMe(){
+    $("myOk").textContent = G.ok;
+    $("myIdx").textContent = Math.min(G.idx+1, NQ);
+    $("myBar").style.width = (G.idx/NQ*100) + "%";
+  }
+  function updateOp(){
+    $("opOk").textContent = G.opOk;
+    $("opIdx").textContent = Math.min(G.opIdx, NQ);
+    $("opBar").style.width = (G.opIdx/NQ*100) + "%";
+  }
+
+  function finishMine(){
+    if(G.myFin) return;
+    G.myFin = true; G.myMs = Math.min(Date.now(), G.endAt) - G.startAt;
+    send({t:"fin", idx:G.idx, ok:G.ok, ms:G.myMs});
+    $("playArea").style.display = "none"; $("waitFin").style.display = "";
+    checkResult();
+  }
+
+  function checkResult(){
+    if(!G || G.resultShown || !G.myFin) return;
+    if(G.opFin || Date.now() > G.endAt + 5000) showResult();
+  }
+
+  function showResult(){
+    G.resultShown = true; stopTimer(); show("s-result");
+    var me = G.ok, op = G.opOk, t = $("resTxt"), text, cls = "res";
+    if(me > op){ text = "Siz yutdingiz!"; cls += " win"; }
+    else if(me < op){ text = oppName + " yutdi"; cls += " lose"; }
+    else {
+      var bothDone = G.idx >= NQ && G.opIdx >= NQ && G.opFin;
+      if(bothDone && G.myMs < G.opMs){ text = "Siz yutdingiz! (tezroq tugatdingiz)"; cls += " win"; }
+      else if(bothDone && G.myMs > G.opMs){ text = oppName + " yutdi (tezroq tugatdi)"; cls += " lose"; }
+      else text = "Durang";
+    }
+    t.textContent = text; t.className = cls;
+    $("resDetail").textContent = myName + ": " + me + " ta to'g'ri (" + Math.min(G.idx,NQ) + " ta savol).   " + oppName + ": " + op + " ta to'g'ri (" + Math.min(G.opIdx,NQ) + " ta savol).";
+    try{ conn && conn.close(); }catch(e){}
+  }
+
+  /* ======== Tugmalar ======== */
+  $("play").addEventListener("click", function(){
+    var v = $("nick").value.trim() || "O'yinchi" + Math.floor(Math.random()*900+100);
+    myName = v.slice(0,16);
+    try{ localStorage.setItem("duelNick", $("nick").value.trim()); }catch(e){}
+    if(typeof Peer === "undefined"){ $("err").textContent = "PeerJS yuklanmadi. Internetni tekshiring va sahifani yangilang."; return; }
+    $("err").textContent = "";
+    search();
+  });
+  $("cancel").addEventListener("click", function(){ token++; resetNet(); show("s-home"); });
+  $("skip").addEventListener("click", skip);
+  $("again").addEventListener("click", function(){ token++; stopTimer(); G = null; resetNet(); search(); });
+  document.addEventListener("keydown", function(e){
+    if(!G || !G.endAt || G.myFin || e.target.tagName === "INPUT") return;
+    var k = e.key.toLowerCase(), i = "1234".indexOf(k);
+    if(i < 0) i = "abcd".indexOf(k);
+    if(i >= 0 && k.length === 1) answer(i);
+  });
+  window.addEventListener("beforeunload", function(){ try{ conn && conn.close(); }catch(e){} });
+})();
+</script>
+</body>
+</html>
